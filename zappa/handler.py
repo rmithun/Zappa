@@ -492,7 +492,7 @@ class LambdaHandler:
         # Related: https://github.com/Miserlou/Zappa/issues/1924
         elif event.get("awslogs", None):
             result = None
-            if hasattr(self.settings, "APP_MODULE") and hasattr(self.settings, "APP_FUNCTION"):
+            if hasattr(settings, 'APP_MODULE') and hasattr(settings, 'APP_FUNCTION'):
                 whole_function = "{}.{}".format(settings.APP_MODULE, settings.APP_FUNCTION)
                 app_function = self.import_module_and_get_function(whole_function)
                 if app_function:
