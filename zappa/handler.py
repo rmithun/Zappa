@@ -492,14 +492,17 @@ class LambdaHandler:
         # Related: https://github.com/Miserlou/Zappa/issues/1924
         elif event.get("awslogs", None):
             result = None
-            whole_function = "{}.{}".format(settings.APP_MODULE, settings.APP_FUNCTION)
-            app_function = self.import_module_and_get_function(whole_function)
-            if app_function:
-                result = self.run_function(app_function, event, context)
-                logger.debug("Result of %s:" % whole_function)
-                logger.debug(result)
+            if hasattr(self.settings, "APP_MODULE") and hasattr(self.settings, "APP_FUNCTION"):
+                whole_function = "{}.{}".format(settings.APP_MODULE, settings.APP_FUNCTION)
+                app_function = self.import_module_and_get_function(whole_function)
+                if app_function:
+                    result = self.run_function(app_function, event, context)
+                    logger.debug("Result of %s:" % whole_function)
+                    logger.debug(result)
+                else:
+                    logger.error("Cannot find a function to process the triggered event.")
             else:
-                logger.error("Cannot find a function to process the triggered event.")
+                logger.error("Cannot find APP_MODULE/APP_FUNCTION")
             return result
 
         # Normal web app flow

@@ -41,6 +41,7 @@ mocked_exception_handler = Mock()
 
 
 class TestZappa(unittest.TestCase):
+
     def setUp(self):
         mocked_exception_handler.reset_mock()
 
@@ -394,3 +395,14 @@ class TestZappa(unittest.TestCase):
         response = lh.handler(event, None)
 
         self.assertEqual(response, True)
+
+    def test_cloudwatch_subscription_event_without_app_module(self):
+        """
+        Fix Zappa - "module 'zappa_settings' has no attribute 'APP_MODULE'"
+        when zappa_settings.json does not have APP_MODULE
+        """
+        lh = LambdaHandler("tests.test_event_script_settings_without_app_module")
+        event = {"awslogs": {"data": "some-data-not-important-for-test"}}
+        response = lh.handler(event, None)
+
+        self.assertEqual(response, None)

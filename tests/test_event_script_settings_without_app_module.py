@@ -1,0 +1,8 @@
+API_STAGE = "dev"
+DEBUG = "True"
+DJANGO_SETTINGS = None
+DOMAIN = "api.example.com"
+ENVIRONMENT_VARIABLES = {}
+LOG_LEVEL = "DEBUG"
+PROJECT_NAME = "test_event_script_app"
+COGNITO_TRIGGER_MAPPING = {}
