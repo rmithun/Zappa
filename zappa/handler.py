@@ -109,7 +109,8 @@ class LambdaHandler:
 
                     for library in included_libraries:
                         try:
-                            cdll.LoadLibrary(os.path.join(os.getcwd(), library))
+                            cdll.LoadLibrary(
+                                os.path.join(os.getcwd(), library))
                         except OSError:
                             print(
                                 "Failed to find library: {}...right filename?".format(
@@ -145,10 +146,12 @@ class LambdaHandler:
                     self.trailing_slash = False
 
                 # The app module
-                self.app_module = importlib.import_module(self.settings.APP_MODULE)
+                self.app_module = importlib.import_module(
+                    self.settings.APP_MODULE)
 
                 # The application
-                wsgi_app_function = getattr(self.app_module, self.settings.APP_FUNCTION)
+                wsgi_app_function = getattr(
+                    self.app_module, self.settings.APP_FUNCTION)
             # Django gets special treatment.
             else:
                 try:  # Support both for tests
@@ -157,7 +160,8 @@ class LambdaHandler:
                     from django_zappa_app import get_django_wsgi
 
                 # Get the Django WSGI app from our extension
-                wsgi_app_function = get_django_wsgi(self.settings.DJANGO_SETTINGS)
+                wsgi_app_function = get_django_wsgi(
+                    self.settings.DJANGO_SETTINGS)
                 self.trailing_slash = True
 
             self.wsgi_app = ZappaWSGIMiddleware(wsgi_app_function)
@@ -269,10 +273,13 @@ class LambdaHandler:
         exception_processed = False
         if exception_handler:
             try:
-                handler_function = cls.import_module_and_get_function(exception_handler)
-                exception_processed = handler_function(exception, event, context)
+                handler_function = cls.import_module_and_get_function(
+                    exception_handler)
+                exception_processed = handler_function(
+                    exception, event, context)
             except Exception as cex:
-                logger.error(msg="Failed to process exception via custom handler.")
+                logger.error(
+                    msg="Failed to process exception via custom handler.")
                 print(cex)
         return exception_processed
 
@@ -289,12 +296,15 @@ class LambdaHandler:
                 app_function
             )
         else:  # Python 2
-            args, varargs, keywords, defaults = inspect.getargspec(app_function)
+            args, varargs, keywords, defaults = inspect.getargspec(
+                app_function)
         num_args = len(args)
         if num_args == 0:
-            result = app_function(event, context) if varargs else app_function()
+            result = app_function(
+                event, context) if varargs else app_function()
         elif num_args == 1:
-            result = app_function(event, context) if varargs else app_function(event)
+            result = app_function(
+                event, context) if varargs else app_function(event)
         elif num_args == 2:
             result = app_function(event, context)
         else:
@@ -382,11 +392,13 @@ class LambdaHandler:
         # or scheduled event.
         if event.get("detail-type") == "Scheduled Event":
 
-            whole_function = event["resources"][0].split("/")[-1].split("-")[-1]
+            whole_function = event["resources"][0].split(
+                "/")[-1].split("-")[-1]
 
             # This is a scheduled function.
             if "." in whole_function:
-                app_function = self.import_module_and_get_function(whole_function)
+                app_function = self.import_module_and_get_function(
+                    whole_function)
 
                 # Execute the function!
                 return self.run_function(app_function, event, context)
@@ -439,11 +451,13 @@ class LambdaHandler:
             result = None
             whole_function = self.get_function_for_aws_event(records[0])
             if whole_function:
-                app_function = self.import_module_and_get_function(whole_function)
+                app_function = self.import_module_and_get_function(
+                    whole_function)
                 result = self.run_function(app_function, event, context)
                 logger.debug(result)
             else:
-                logger.error("Cannot find a function to process the triggered event.")
+                logger.error(
+                    "Cannot find a function to process the triggered event.")
             return result
 
         # this is an AWS-event triggered from Lex bot's intent
@@ -451,18 +465,21 @@ class LambdaHandler:
             result = None
             whole_function = self.get_function_from_bot_intent_trigger(event)
             if whole_function:
-                app_function = self.import_module_and_get_function(whole_function)
+                app_function = self.import_module_and_get_function(
+                    whole_function)
                 result = self.run_function(app_function, event, context)
                 logger.debug(result)
             else:
-                logger.error("Cannot find a function to process the triggered event.")
+                logger.error(
+                    "Cannot find a function to process the triggered event.")
             return result
 
         # This is an API Gateway authorizer event
         elif event.get("type") == "TOKEN":
             whole_function = self.settings.AUTHORIZER_FUNCTION
             if whole_function:
-                app_function = self.import_module_and_get_function(whole_function)
+                app_function = self.import_module_and_get_function(
+                    whole_function)
                 policy = self.run_function(app_function, event, context)
                 return policy
             else:
@@ -474,10 +491,12 @@ class LambdaHandler:
         # This is an AWS Cognito Trigger Event
         elif event.get("triggerSource", None):
             triggerSource = event.get("triggerSource")
-            whole_function = self.get_function_for_cognito_trigger(triggerSource)
+            whole_function = self.get_function_for_cognito_trigger(
+                triggerSource)
             result = event
             if whole_function:
-                app_function = self.import_module_and_get_function(whole_function)
+                app_function = self.import_module_and_get_function(
+                    whole_function)
                 result = self.run_function(app_function, event, context)
                 logger.debug(result)
             else:
@@ -493,14 +512,17 @@ class LambdaHandler:
         elif event.get("awslogs", None):
             result = None
             if hasattr(self.settings, "APP_MODULE") and hasattr(self.settings, "APP_FUNCTION"):
-                whole_function = "{}.{}".format(settings.APP_MODULE, settings.APP_FUNCTION)
-                app_function = self.import_module_and_get_function(whole_function)
+                whole_function = "{}.{}".format(
+                    settings.APP_MODULE, settings.APP_FUNCTION)
+                app_function = self.import_module_and_get_function(
+                    whole_function)
                 if app_function:
                     result = self.run_function(app_function, event, context)
                     logger.debug("Result of %s:" % whole_function)
                     logger.debug(result)
                 else:
-                    logger.error("Cannot find a function to process the triggered event.")
+                    logger.error(
+                        "Cannot find a function to process the triggered event.")
             else:
                 logger.error("Cannot find APP_MODULE/APP_FUNCTION")
             return result
@@ -593,7 +615,7 @@ class LambdaHandler:
                                 response.data
                             ).decode("utf-8")
                             zappa_returndict["isBase64Encoded"] = True
-                        if (settings.BINARY_SUPPORT
+                        elif (settings.BINARY_SUPPORT
                                 and not response.mimetype.startswith("text/")
                                 and response.mimetype != "application/json"):
                             zappa_returndict["body"] = base64.b64encode(
@@ -601,7 +623,8 @@ class LambdaHandler:
                             ).decode("utf-8")
                             zappa_returndict["isBase64Encoded"] = True
                         else:
-                            zappa_returndict["body"] = response.get_data(as_text=True)
+                            zappa_returndict["body"] = response.get_data(
+                                as_text=True)
 
                     zappa_returndict["statusCode"] = response.status_code
                     if "headers" in event:
@@ -621,7 +644,8 @@ class LambdaHandler:
                     delta = time_end - time_start
                     response_time_ms = delta.total_seconds() * 1000
                     response.content = response.data
-                    common_log(environ, response, response_time=response_time_ms)
+                    common_log(environ, response,
+                               response_time=response_time_ms)
 
                     return zappa_returndict
         except Exception as e:  # pragma: no cover
