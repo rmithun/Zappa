@@ -524,7 +524,7 @@ class LambdaHandler:
                     logger.error(
                         "Cannot find a function to process the triggered event.")
             else:
-                logger.error("Cannot find APP_MODULE/APP_FUNCTION")
+                logger.debug("Cannot find APP_MODULE/APP_FUNCTION")
             return result
 
         # Normal web app flow
