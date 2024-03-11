@@ -309,8 +309,10 @@ class LambdaHandler:
             result = app_function(event, context)
         elif num_args == 3:
             print("!Warning! Slick Known Issue:: Lambda function signature has 3 arguments.")
+            # We are not handling events from aws clouwatch
             try:
-                result = app_function()
+                # result = app_function(event, context)
+                result = None
             except Exception as e:
                 print("::Slick::Error in running function", e)
                 result = None
