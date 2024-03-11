@@ -309,6 +309,11 @@ class LambdaHandler:
             result = app_function(event, context)
         elif num_args == 3:
             print("!Warning! Slick Known Issue:: Lambda function signature has 3 arguments.")
+            try:
+                result = app_function(event, context)
+            except Exception as e:
+                print("::Slick::Error in running function", e)
+                result = None
         else:
             raise RuntimeError(
                 "Function signature is invalid. Expected a function that accepts at most "
